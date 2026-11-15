@@ -1,255 +1,163 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import '@/assets/styles/home.css'
 
 const router = useRouter()
 
-function searchBuses() {
-  router.push('/buses')
+const origin = ref('')
+const destination = ref('')
+const travelDate = ref('')
+const searchError = ref('')
+
+const cities = ['Phnom Penh', 'Siem Reap', 'Battambang', 'Sihanoukville', 'Kampot', 'Kampong Cham']
+
+function searchTrips() {
+  searchError.value = ''
+
+  if (origin.value === destination.value) {
+    searchError.value = 'Departure and destination must be different.'
+    return
+  }
+
+  router.push({
+    path: '/trips',
+    query: {
+      origin: origin.value,
+      destination: destination.value,
+      date: travelDate.value,
+    },
+  })
 }
 </script>
 
 <template>
   <div class="home-page">
-    <header class="navbar">
-      <RouterLink to="/" class="logo">🚌 BusBooking</RouterLink>
+    <header class="home-navbar">
+      <RouterLink to="/" class="home-logo"> 🚌 BusBooking </RouterLink>
 
-      <nav>
+      <nav class="home-nav">
         <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/buses">Routes</RouterLink>
-        <RouterLink to="/my-bookings">My Bookings</RouterLink>
-        <RouterLink to="/login" class="nav-login">Sign In</RouterLink>
+        <a href="#features">Why Us</a>
+        <RouterLink to="/login" class="signin-link"> Sign In </RouterLink>
+        <RouterLink to="/register" class="signup-link"> Sign Up </RouterLink>
       </nav>
     </header>
 
     <main>
-      <section class="hero">
-        <div class="hero-content">
-          <h1>Book Your Bus Ticket<br />Quick & Easy</h1>
-          <p>Travel across Cambodia with comfort. Find your route and book your seat today.</p>
+      <section class="home-hero">
+        <div class="hero-inner">
+          <div class="hero-copy">
+            <span class="hero-label"> YOUR JOURNEY STARTS HERE </span>
 
-          <form class="search-box" @submit.prevent="searchBuses">
-            <div class="field">
-              <label for="from">From</label>
-              <select id="from" required>
-                <option value="">Select departure</option>
-                <option>Phnom Penh</option>
-                <option>Siem Reap</option>
-                <option>Battambang</option>
-              </select>
+            <h1>
+              Book Your Bus Ticket
+              <span>Quick & Easy</span>
+            </h1>
+
+            <p>
+              Discover available trips across Cambodia. Compare departure times, choose your seat,
+              and book with confidence.
+            </p>
+
+            <div class="hero-highlights">
+              <span>✓ Easy Trip Search</span>
+              <span>✓ Seat Selection</span>
+              <span>✓ Manage Bookings</span>
             </div>
+          </div>
 
-            <div class="field">
-              <label for="to">To</label>
-              <select id="to" required>
-                <option value="">Select destination</option>
-                <option>Siem Reap</option>
-                <option>Phnom Penh</option>
-                <option>Sihanoukville</option>
-              </select>
-            </div>
-
-            <div class="field">
-              <label for="date">Travel Date</label>
-              <input id="date" type="date" required />
-            </div>
-
-            <button type="submit">Search Buses</button>
-          </form>
+          <div class="hero-visual">
+            <div class="hero-bus">🚌</div>
+            <div class="hero-visual-title">Explore Cambodia</div>
+            <p>Find your next journey with BusBooking</p>
+          </div>
         </div>
       </section>
 
-      <section class="features">
-        <h2>Why Choose BusBooking?</h2>
-
-        <div class="feature-grid">
-          <div class="feature-card">
-            <span>⚡</span>
-            <h3>Fast Booking</h3>
-            <p>Book your bus tickets in just a few clicks.</p>
+      <section class="search-section">
+        <div class="search-panel">
+          <div class="search-heading">
+            <h2>Find Your Bus</h2>
+            <p>Where would you like to go?</p>
           </div>
 
-          <div class="feature-card">
-            <span>🔒</span>
-            <h3>Secure Booking</h3>
-            <p>Manage your booking information easily.</p>
-          </div>
+          <form class="trip-search" @submit.prevent="searchTrips">
+            <div class="search-field">
+              <label for="origin">From</label>
+              <select id="origin" v-model="origin" required>
+                <option value="" disabled>Select departure</option>
+                <option v-for="city in cities" :key="city" :value="city">
+                  {{ city }}
+                </option>
+              </select>
+            </div>
 
-          <div class="feature-card">
-            <span>🚌</span>
-            <h3>Many Routes</h3>
-            <p>Explore destinations across Cambodia.</p>
-          </div>
+            <div class="search-field">
+              <label for="destination">To</label>
+              <select id="destination" v-model="destination" required>
+                <option value="" disabled>Select destination</option>
+                <option v-for="city in cities" :key="city" :value="city">
+                  {{ city }}
+                </option>
+              </select>
+            </div>
+
+            <div class="search-field">
+              <label for="travel-date">Travel Date</label>
+              <input id="travel-date" v-model="travelDate" type="date" required />
+            </div>
+
+            <button class="search-button" type="submit">Search Trips</button>
+          </form>
+
+          <p v-if="searchError" class="search-error">
+            {{ searchError }}
+          </p>
         </div>
+      </section>
+
+      <section id="features" class="home-features">
+        <div class="section-heading">
+          <span>WHY BUSBOOKING?</span>
+          <h2>A Better Way to Travel</h2>
+          <p>Everything you need for a simple bus booking experience.</p>
+        </div>
+
+        <div class="features-grid">
+          <article class="feature-card">
+            <div class="feature-icon">🔎</div>
+            <h3>Find Trips Easily</h3>
+            <p>Search available trips by departure, destination, and date.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon">💺</div>
+            <h3>Choose Your Seat</h3>
+            <p>View available seats and select your preferred seat number.</p>
+          </article>
+
+          <article class="feature-card">
+            <div class="feature-icon">📋</div>
+            <h3>Manage Bookings</h3>
+            <p>View your booked trips and cancel a booking when needed.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="home-cta">
+        <h2>Ready for Your Next Journey?</h2>
+        <p>Create an account to start booking your bus seats.</p>
+        <RouterLink to="/register"> Get Started </RouterLink>
       </section>
     </main>
 
-    <footer>© 2026 BusBooking. All rights reserved.</footer>
+    <footer class="home-footer">
+      <div>
+        <strong>🚌 BusBooking</strong>
+        <p>Simple online bus ticket booking.</p>
+      </div>
+      <span>© 2026 BusBooking</span>
+    </footer>
   </div>
 </template>
-
-<style scoped>
-.home-page {
-  min-height: 100vh;
-  font-family: Arial, sans-serif;
-  color: #17233b;
-  background: #f8faff;
-}
-
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 7%;
-  background: white;
-  box-shadow: 0 2px 12px #0000000a;
-}
-
-.logo {
-  font-size: 25px;
-  font-weight: bold;
-  color: #0756d9;
-  text-decoration: none;
-}
-
-nav {
-  display: flex;
-  gap: 30px;
-  align-items: center;
-}
-
-nav a {
-  color: #344054;
-  text-decoration: none;
-}
-
-.nav-login {
-  background: #0756e8;
-  color: white;
-  padding: 11px 22px;
-  border-radius: 8px;
-}
-
-nav .nav-login {
-  color: white;
-}
-
-.hero {
-  padding: 110px 7%;
-  background: linear-gradient(120deg, #0756d9, #5a9af5);
-  color: white;
-}
-
-.hero-content {
-  max-width: 1150px;
-  margin: auto;
-}
-
-.hero h1 {
-  font-size: clamp(36px, 5vw, 60px);
-  line-height: 1.15;
-}
-
-.hero p {
-  font-size: 18px;
-  line-height: 1.7;
-  max-width: 520px;
-}
-
-.search-box {
-  margin-top: 45px;
-  padding: 25px;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr auto;
-  align-items: end;
-  gap: 15px;
-  background: white;
-  border-radius: 15px;
-  box-shadow: 0 15px 40px #00000020;
-}
-
-.field label {
-  display: block;
-  color: #344054;
-  font-weight: 600;
-  margin-bottom: 10px;
-}
-
-.field select,
-.field input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 14px;
-  border: 1px solid #d0d5dd;
-  border-radius: 8px;
-  background: white;
-}
-
-.search-box button {
-  padding: 15px 25px;
-  background: #0756e8;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.features {
-  padding: 75px 7%;
-  text-align: center;
-}
-
-.features h2 {
-  font-size: 32px;
-  margin-bottom: 40px;
-}
-
-.feature-grid {
-  max-width: 1150px;
-  margin: auto;
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 25px;
-}
-
-.feature-card {
-  background: white;
-  padding: 35px 25px;
-  border-radius: 15px;
-  box-shadow: 0 5px 20px #0000000a;
-}
-
-.feature-card span {
-  font-size: 35px;
-}
-
-.feature-card h3 {
-  margin: 20px 0 10px;
-}
-
-.feature-card p {
-  color: #667085;
-}
-
-footer {
-  padding: 25px;
-  text-align: center;
-  color: #667085;
-}
-
-@media (max-width: 850px) {
-  .navbar,
-  nav {
-    flex-wrap: wrap;
-    gap: 15px;
-  }
-
-  .hero {
-    padding: 65px 6%;
-  }
-
-  .search-box,
-  .feature-grid {
-    grid-template-columns: 1fr;
-  }
-}
-</style>
