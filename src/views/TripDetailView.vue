@@ -1,94 +1,16 @@
 <script setup lang="ts">
+import Navbar from '@/components/Navbar.vue'
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useBookingStore } from '@/stores/bookingStore'
+import { getTrip } from '@/services/tripService'
 import '@/assets/styles/trip-detail.css'
-
-interface Trip {
-  id: number
-  from: string
-  to: string
-  company: string
-  type: string
-  departure: string
-  duration: string
-  seats: number
-  price: number
-  image: string
-  amenities: string[]
-}
 
 const route = useRoute()
 const router = useRouter()
+const bookingStore = useBookingStore()
 
-const trips: Trip[] = [
-  {
-    id: 1,
-    from: 'Phnom Penh',
-    to: 'Siem Reap',
-    company: 'Angkor Express',
-    type: 'VIP Bus',
-    departure: '06:30',
-    duration: '5h 30m',
-    seats: 44,
-    price: 12,
-    image: '/images/siem-reap.jpg',
-    amenities: ['Air Conditioning', 'Wi-Fi', 'USB Charging', 'Reclining Seats'],
-  },
-  {
-    id: 2,
-    from: 'Phnom Penh',
-    to: 'Battambang',
-    company: 'Mekong Bus',
-    type: 'Standard Bus',
-    departure: '08:00',
-    duration: '4h 30m',
-    seats: 45,
-    price: 10,
-    image: '/images/battambang.jpg',
-    amenities: ['Air Conditioning', 'Comfortable Seats'],
-  },
-  {
-    id: 3,
-    from: 'Phnom Penh',
-    to: 'Sihanoukville',
-    company: 'Virak Buntham',
-    type: 'VIP Bus',
-    departure: '13:00',
-    duration: '6h 00m',
-    seats: 36,
-    price: 15,
-    image: '/images/sihanoukville.jpg',
-    amenities: ['Air Conditioning', 'Wi-Fi', 'USB Charging'],
-  },
-  {
-    id: 4,
-    from: 'Phnom Penh',
-    to: 'Kampot',
-    company: 'Angkor Express',
-    type: 'Standard Bus',
-    departure: '09:30',
-    duration: '3h 45m',
-    seats: 40,
-    price: 9,
-    image: '/images/kampot.jpg',
-    amenities: ['Air Conditioning', 'Comfortable Seats'],
-  },
-  {
-    id: 5,
-    from: 'Siem Reap',
-    to: 'Phnom Penh',
-    company: 'Mekong Bus',
-    type: 'VIP Bus',
-    departure: '14:00',
-    duration: '5h 30m',
-    seats: 44,
-    price: 12,
-    image: '/images/siem-reap.jpg',
-    amenities: ['Air Conditioning', 'Wi-Fi', 'USB Charging'],
-  },
-]
-
-const trip = computed(() => trips.find((item) => item.id === Number(route.params.id)))
+const trip = computed(() => getTrip(Number(route.params.id)))
 
 const passengers = ref(1)
 
@@ -102,36 +24,18 @@ const total = computed(() => (trip.value?.price ?? 0) * passengers.value)
 function selectSeats() {
   if (!trip.value) return
 
-  router.push({
-    path: `/trips/${trip.value.id}/seats`,
-    query: {
-      ...(travelDate.value && { date: travelDate.value }),
-      passengers: String(passengers.value),
-    },
-  })
+  const existing = bookingStore.booking
+  if (!existing || existing.tripId !== trip.value.id || existing.date !== travelDate.value || existing.passengers !== passengers.value) {
+    bookingStore.setBooking({ tripId: trip.value.id, date: travelDate.value, passengers: passengers.value, seats: [], total: 0, passengersInfo: [], contact: { email: '', phone: '' } })
+  }
+  router.push(`/trips/${trip.value.id}/seats`)
 }
 </script>
 
 <template>
   <div class="trip-detail-page">
     <!-- NAVIGATION -->
-    <header class="detail-navbar">
-      <RouterLink to="/" class="detail-logo">
-        <img src="/images/logo.png" alt="BookingBus Logo" />
-      </RouterLink>
-
-      <nav class="detail-nav">
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/trips">Routes</RouterLink>
-        <RouterLink to="/my-bookings">My Bookings</RouterLink>
-        <RouterLink to="/">Help</RouterLink>
-      </nav>
-
-      <div class="detail-account">
-        <RouterLink to="/login">Sign In</RouterLink>
-        <RouterLink to="/register" class="detail-signup"> Sign Up </RouterLink>
-      </div>
-    </header>
+    <Navbar prefix="detail" />
 
     <!-- HERO -->
     <section class="detail-hero">

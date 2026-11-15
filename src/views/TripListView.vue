@@ -1,88 +1,13 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
+import { trips as routes } from '@/services/tripService'
 import { useRoute, useRouter } from 'vue-router'
 import '@/assets/styles/routes.css'
 
 const route = useRoute()
 const router = useRouter()
 
-interface BusRoute {
-  id: number
-  from: string
-  to: string
-  company: string
-  type: string
-  seats: number
-  duration: string
-  departure: string
-  price: number
-  image: string
-}
-
 const cities = ['Phnom Penh', 'Siem Reap', 'Battambang', 'Sihanoukville', 'Kampot', 'Kampong Cham']
-
-const routes: BusRoute[] = [
-  {
-    id: 1,
-    from: 'Phnom Penh',
-    to: 'Siem Reap',
-    company: 'Angkor Express',
-    type: 'VIP Bus',
-    seats: 44,
-    duration: '5h 30m',
-    departure: '06:30',
-    price: 12,
-    image: '/images/siem-reap.jpg',
-  },
-  {
-    id: 2,
-    from: 'Phnom Penh',
-    to: 'Battambang',
-    company: 'Mekong Bus',
-    type: 'Standard Bus',
-    seats: 45,
-    duration: '4h 30m',
-    departure: '08:00',
-    price: 10,
-    image: '/images/battambang.jpg',
-  },
-  {
-    id: 3,
-    from: 'Phnom Penh',
-    to: 'Sihanoukville',
-    company: 'Virak Buntham',
-    type: 'VIP Bus',
-    seats: 36,
-    duration: '6h 00m',
-    departure: '13:00',
-    price: 15,
-    image: '/images/sihanoukville.jpg',
-  },
-  {
-    id: 4,
-    from: 'Phnom Penh',
-    to: 'Kampot',
-    company: 'Angkor Express',
-    type: 'Standard Bus',
-    seats: 40,
-    duration: '3h 45m',
-    departure: '09:30',
-    price: 9,
-    image: '/images/kampot.jpg',
-  },
-  {
-    id: 5,
-    from: 'Siem Reap',
-    to: 'Phnom Penh',
-    company: 'Mekong Bus',
-    type: 'VIP Bus',
-    seats: 44,
-    duration: '5h 30m',
-    departure: '14:00',
-    price: 12,
-    image: '/images/siem-reap.jpg',
-  },
-]
 
 const origin = ref('')
 const destination = ref('')
@@ -181,7 +106,7 @@ function searchRoutes() {
 }
 
 function viewTrip(id: number) {
-  router.push(`/trips/${id}`)
+  router.push({ path: `/trips/${id}`, query: travelDate.value ? { date: travelDate.value } : {} })
 }
 
 function resetFilters() {

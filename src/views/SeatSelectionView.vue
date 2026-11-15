@@ -1,100 +1,27 @@
 <script setup lang="ts">
+import SeatMap from '@/components/SeatMap.vue'
+import BookingSteps from '@/components/BookingSteps.vue'
+import Navbar from '@/components/Navbar.vue'
 import { computed, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useBookingStore } from '@/stores/bookingStore'
+import { storeToRefs } from 'pinia'
+import { getTrip } from '@/services/tripService'
 import '@/assets/styles/seat-selection.css'
-
-interface Trip {
-  id: number
-  from: string
-  to: string
-  company: string
-  type: string
-  departure: string
-  duration: string
-  price: number
-  image: string
-}
 
 const route = useRoute()
 const router = useRouter()
+const bookingStore = useBookingStore()
+const { booking } = storeToRefs(bookingStore)
 
-const trips: Trip[] = [
-  {
-    id: 1,
-    from: 'Phnom Penh',
-    to: 'Siem Reap',
-    company: 'Angkor Express',
-    type: 'VIP Bus',
-    departure: '06:30',
-    duration: '5h 30m',
-    price: 12,
-    image: '/images/siem-reap.jpg',
-  },
-  {
-    id: 2,
-    from: 'Phnom Penh',
-    to: 'Battambang',
-    company: 'Mekong Bus',
-    type: 'Standard Bus',
-    departure: '08:00',
-    duration: '4h 30m',
-    price: 10,
-    image: '/images/battambang.jpg',
-  },
-  {
-    id: 3,
-    from: 'Phnom Penh',
-    to: 'Sihanoukville',
-    company: 'Virak Buntham',
-    type: 'VIP Bus',
-    departure: '13:00',
-    duration: '6h 00m',
-    price: 15,
-    image: '/images/sihanoukville.jpg',
-  },
-  {
-    id: 4,
-    from: 'Phnom Penh',
-    to: 'Kampot',
-    company: 'Angkor Express',
-    type: 'Standard Bus',
-    departure: '09:30',
-    duration: '3h 45m',
-    price: 9,
-    image: '/images/kampot.jpg',
-  },
-  {
-    id: 5,
-    from: 'Siem Reap',
-    to: 'Phnom Penh',
-    company: 'Mekong Bus',
-    type: 'VIP Bus',
-    departure: '14:00',
-    duration: '5h 30m',
-    price: 12,
-    image: '/images/siem-reap.jpg',
-  },
-]
-
-const trip = computed(() => trips.find((t) => t.id === Number(route.params.id)))
+const trip = computed(() => getTrip(Number(route.params.id)))
 
 const passengers = computed(() => {
-  const raw = Number(route.query.passengers ?? 1)
+  const raw = Number(route.query.passengers ?? (booking.value?.tripId === trip.value?.id ? booking.value?.passengers : 1))
   return Number.isInteger(raw) ? Math.max(1, Math.min(6, raw)) : 1
 })
 
-const travelDate = computed(() => (typeof route.query.date === 'string' ? route.query.date : ''))
-
-// Horizontal layout:
-// 4 seat rows (A, B, C, D)
-// 11 columns (1-11)
-// Aisle between B and C
-const seatLetters = ['A', 'B', 'C', 'D']
-
-const seatRows = seatLetters.map((letter) => ({
-  letter,
-  seats: Array.from({ length: 11 }, (_, index) => `${index + 1}${letter}`),
-}))
+const travelDate = computed(() => (typeof route.query.date === 'string' ? route.query.date : (booking.value?.tripId === trip.value?.id ? booking.value?.date ?? '' : '')))
 
 const occupiedSeats = ref<string[]>([
   '1A',
@@ -111,25 +38,16 @@ const occupiedSeats = ref<string[]>([
   '11D',
 ])
 
-const selectedSeats = ref<string[]>([])
-const viewMode = ref<'seat' | 'list'>('seat')
+const selectedSeats = computed({
+  get: () => booking.value && booking.value.tripId === trip.value?.id ? booking.value.seats : [],
+  set: (seats: string[]) => {
+    if (!trip.value) return
+    bookingStore.setBooking({ tripId: trip.value.id, date: travelDate.value, passengers: passengers.value, seats, total: seats.length * trip.value.price, passengersInfo: [], contact: { email: '', phone: '' } })
+  },
+})
 const error = ref('')
 
-const allSeats = computed(() => seatRows.flatMap((row) => row.seats))
-
 const totalPrice = computed(() => selectedSeats.value.length * (trip.value?.price ?? 0))
-
-function seatStatus(seat: string) {
-  if (occupiedSeats.value.includes(seat)) {
-    return 'occupied'
-  }
-
-  if (selectedSeats.value.includes(seat)) {
-    return 'selected'
-  }
-
-  return 'available'
-}
 
 function toggleSeat(seat: string) {
   error.value = ''
@@ -157,25 +75,8 @@ function continueBooking() {
     return
   }
 
-  sessionStorage.setItem(
-    'pendingBooking',
-    JSON.stringify({
-      tripId: trip.value.id,
-      date: travelDate.value,
-      passengers: passengers.value,
-      seats: selectedSeats.value,
-      total: totalPrice.value,
-    }),
-  )
 
-  router.push({
-    path: `/trips/${trip.value.id}/passengers`,
-    query: {
-      ...(travelDate.value && {
-        date: travelDate.value,
-      }),
-    },
-  })
+  router.push(`/trips/${trip.value.id}/passengers`)
 }
 
 function goBack() {
@@ -193,54 +94,11 @@ function goBack() {
 <template>
   <div class="seat-page">
     <!-- NAVBAR -->
-    <header class="seat-navbar">
-      <RouterLink to="/" class="seat-logo">
-        <img src="/images/logo.png" alt="BookingBus" />
-      </RouterLink>
-
-      <nav class="seat-nav">
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/trips">Book Bus</RouterLink>
-        <RouterLink to="/my-bookings"> My Bookings </RouterLink>
-        <RouterLink to="/">Help</RouterLink>
-      </nav>
-
-      <div class="seat-account">
-        <RouterLink to="/login">Sign In</RouterLink>
-        <RouterLink to="/register" class="seat-signup"> Sign Up </RouterLink>
-      </div>
-    </header>
+    <Navbar prefix="seat" routes-label="Book Bus" />
 
     <!-- BOOKING STEPS -->
-    <div class="seat-step-wrapper">
-      <div class="seat-steps">
-        <div class="seat-step completed">
-          <span>✓</span>
-          Select Bus
-        </div>
+    <BookingSteps prefix="seat" :current="2" />
 
-        <div class="seat-step-line active"></div>
-
-        <div class="seat-step current">
-          <span>2</span>
-          Select Seat
-        </div>
-
-        <div class="seat-step-line"></div>
-
-        <div class="seat-step">
-          <span>3</span>
-          Passenger Info
-        </div>
-
-        <div class="seat-step-line"></div>
-
-        <div class="seat-step">
-          <span>4</span>
-          Confirm Booking
-        </div>
-      </div>
-    </div>
 
     <main class="seat-container">
       <!-- NOT FOUND -->
@@ -281,7 +139,7 @@ function goBack() {
 
               <div class="seat-trip-detail">
                 <span>▣</span>
-                44 seats
+                {{ trip.seats }} seats
               </div>
 
               <div class="seat-amenities">
@@ -310,89 +168,7 @@ function goBack() {
               </span>
             </div>
 
-            <!-- HORIZONTAL BUS -->
-            <div v-if="viewMode === 'seat'" class="seat-bus-scroll">
-              <div class="seat-bus-shell">
-                <!-- FRONT / DRIVER -->
-                <div class="seat-bus-front">
-                  <div class="seat-driver">
-                    <span>◉</span>
-                    <small>DRIVER</small>
-                  </div>
-                  <span class="seat-front-label"> FRONT </span>
-                </div>
-
-                <!-- SEAT GRID -->
-                <div class="seat-map-horizontal">
-                  <div
-                    v-for="row in seatRows"
-                    :key="row.letter"
-                    class="seat-horizontal-row"
-                    :class="{
-                      'seat-row-before-aisle': row.letter === 'B',
-                    }"
-                  >
-                    <button
-                      v-for="seat in row.seats"
-                      :key="seat"
-                      type="button"
-                      class="seat-chair"
-                      :class="seatStatus(seat)"
-                      :disabled="seatStatus(seat) === 'occupied'"
-                      :aria-label="`Seat ${seat}, ${seatStatus(seat)}`"
-                      :aria-pressed="seatStatus(seat) === 'selected'"
-                      @click="toggleSeat(seat)"
-                    >
-                      {{ seat }}
-                    </button>
-                  </div>
-                </div>
-
-                <!-- REAR -->
-                <div class="seat-bus-back">
-                  <span>REAR</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- VIEW SWITCH -->
-            <div class="seat-view-toggle">
-              <button
-                type="button"
-                :class="{
-                  active: viewMode === 'seat',
-                }"
-                @click="viewMode = 'seat'"
-              >
-                🚌 Seat View
-              </button>
-
-              <button
-                type="button"
-                :class="{
-                  active: viewMode === 'list',
-                }"
-                @click="viewMode = 'list'"
-              >
-                ☷ List View
-              </button>
-            </div>
-
-            <!-- LIST VIEW -->
-            <div v-if="viewMode === 'list'" class="seat-list-view">
-              <button
-                v-for="seat in allSeats"
-                :key="seat"
-                type="button"
-                :class="seatStatus(seat)"
-                :disabled="seatStatus(seat) === 'occupied'"
-                :aria-label="`Seat ${seat}, ${seatStatus(seat)}`"
-                :aria-pressed="seatStatus(seat) === 'selected'"
-                @click="toggleSeat(seat)"
-              >
-                {{ seat }}
-              </button>
-            </div>
+            <SeatMap :selected-seats="selectedSeats" :occupied-seats="occupiedSeats" @toggle="toggleSeat" />
 
             <p v-if="error" class="seat-error" role="alert">
               {{ error }}

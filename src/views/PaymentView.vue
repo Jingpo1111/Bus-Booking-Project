@@ -1,96 +1,18 @@
 <script setup lang="ts">
+import BookingSteps from '@/components/BookingSteps.vue'
+import Navbar from '@/components/Navbar.vue'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useBookingStore } from '@/stores/bookingStore'
+import { storeToRefs } from 'pinia'
+import { getTrip } from '@/services/tripService'
 import '@/assets/styles/payment.css'
-
-interface Passenger {
-  fullName: string
-  gender: string
-  phone: string
-}
-
-interface PendingBooking {
-  tripId: number
-  date: string
-  passengers: number
-  seats: string[]
-  total: number
-  passengersInfo: Passenger[]
-  contact: {
-    email: string
-    phone: string
-  }
-}
-
-interface Trip {
-  id: number
-  from: string
-  to: string
-  company: string
-  type: string
-  departure: string
-  duration: string
-  price: number
-}
 
 const router = useRouter()
 const route = useRoute()
 
-// Mock data: use the same trip IDs as your other pages.
-const trips: Trip[] = [
-  {
-    id: 1,
-    from: 'Phnom Penh',
-    to: 'Siem Reap',
-    company: 'Angkor Express',
-    type: 'VIP Bus',
-    departure: '06:30 AM',
-    duration: '5h 30m',
-    price: 12,
-  },
-  {
-    id: 2,
-    from: 'Phnom Penh',
-    to: 'Battambang',
-    company: 'Mekong Bus',
-    type: 'Standard Bus',
-    departure: '08:00 AM',
-    duration: '4h 30m',
-    price: 10,
-  },
-  {
-    id: 3,
-    from: 'Phnom Penh',
-    to: 'Sihanoukville',
-    company: 'Virak Buntham',
-    type: 'VIP Bus',
-    departure: '01:00 PM',
-    duration: '6h 00m',
-    price: 15,
-  },
-  {
-    id: 4,
-    from: 'Phnom Penh',
-    to: 'Kampot',
-    company: 'Angkor Express',
-    type: 'Standard Bus',
-    departure: '09:30 AM',
-    duration: '3h 45m',
-    price: 9,
-  },
-  {
-    id: 5,
-    from: 'Siem Reap',
-    to: 'Phnom Penh',
-    company: 'Mekong Bus',
-    type: 'VIP Bus',
-    departure: '02:00 PM',
-    duration: '5h 30m',
-    price: 12,
-  },
-]
-
-const booking = ref<PendingBooking | null>(null)
+const bookingStore = useBookingStore()
+const { booking } = storeToRefs(bookingStore)
 const loading = ref(true)
 const submitting = ref(false)
 const error = ref('')
@@ -98,7 +20,7 @@ const agreeTerms = ref(false)
 const completed = ref(false)
 const bookingId = ref('')
 
-const trip = computed(() => trips.find((t) => t.id === Number(route.params.id)))
+const trip = computed(() => getTrip(Number(route.params.id)))
 
 const totalPrice = computed(() => (trip.value?.price ?? 0) * (booking.value?.seats.length ?? 0))
 
@@ -131,31 +53,8 @@ const validBooking = computed(() => {
 })
 
 onMounted(() => {
-  try {
-    const saved = sessionStorage.getItem('pendingBooking')
-
-    if (!saved) {
-      error.value = 'No booking found. Please select a bus first.'
-      return
-    }
-
-    const parsed: unknown = JSON.parse(saved)
-
-    if (!parsed || typeof parsed !== 'object') {
-      throw new Error('Invalid booking')
-    }
-
-    booking.value = parsed as PendingBooking
-
-    if (!validBooking.value) {
-      error.value = 'Booking information is incomplete or invalid.'
-    }
-  } catch {
-    error.value = 'Unable to load booking details.'
-    booking.value = null
-  } finally {
-    loading.value = false
-  }
+  if (!validBooking.value) error.value = 'Booking information is incomplete or invalid.'
+  loading.value = false
 })
 
 function confirmBooking() {
@@ -210,7 +109,7 @@ function confirmBooking() {
 
     bookingId.value = id
     completed.value = true
-    sessionStorage.removeItem('pendingBooking')
+    bookingStore.clear()
   } catch {
     error.value = 'Unable to save booking. Please try again.'
   } finally {
@@ -230,39 +129,11 @@ function viewBookings() {
 <template>
   <div class="payment-page">
     <!-- NAVBAR -->
-    <header class="payment-navbar">
-      <RouterLink to="/" class="payment-logo">
-        <img src="/images/logo.png" alt="BookingBus" />
-      </RouterLink>
-
-      <nav class="payment-nav">
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/trips">Routes</RouterLink>
-        <RouterLink to="/my-bookings">My Bookings</RouterLink>
-        <RouterLink to="/">Help</RouterLink>
-      </nav>
-
-      <div class="payment-account">
-        <RouterLink to="/login">Sign In</RouterLink>
-        <RouterLink to="/register" class="payment-signup"> Sign Up </RouterLink>
-      </div>
-    </header>
+    <Navbar prefix="payment" />
 
     <!-- PROGRESS -->
-    <div class="payment-step-wrapper">
-      <div class="payment-steps">
-        <div class="payment-step done"><span>✓</span> Select Bus</div>
-        <div class="payment-line active"></div>
+    <BookingSteps prefix="payment" :current="4" />
 
-        <div class="payment-step done"><span>✓</span> Select Seat</div>
-        <div class="payment-line active"></div>
-
-        <div class="payment-step done"><span>✓</span> Passenger Info</div>
-        <div class="payment-line active"></div>
-
-        <div class="payment-step current"><span>4</span> Confirm Booking</div>
-      </div>
-    </div>
 
     <main class="payment-container">
       <!-- LOADING -->

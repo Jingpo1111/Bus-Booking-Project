@@ -1,90 +1,18 @@
 <script setup lang="ts">
+import BookingSteps from '@/components/BookingSteps.vue'
+import Navbar from '@/components/Navbar.vue'
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useBookingStore, type Passenger } from '@/stores/bookingStore'
+import { storeToRefs } from 'pinia'
+import { getTrip } from '@/services/tripService'
 import '@/assets/styles/passenger-info.css'
-
-interface PendingBooking {
-  tripId: number
-  date: string
-  passengers: number
-  seats: string[]
-  total: number
-}
-
-interface Passenger {
-  fullName: string
-  gender: string
-  phone: string
-}
-
-interface Trip {
-  id: number
-  from: string
-  to: string
-  company: string
-  departure: string
-  duration: string
-  type: string
-  price: number
-}
 
 const route = useRoute()
 const router = useRouter()
 
-const trips: Trip[] = [
-  {
-    id: 1,
-    from: 'Phnom Penh',
-    to: 'Siem Reap',
-    company: 'Angkor Express',
-    departure: '06:30 AM',
-    duration: '5h 30m',
-    type: 'VIP Bus',
-    price: 12,
-  },
-  {
-    id: 2,
-    from: 'Phnom Penh',
-    to: 'Battambang',
-    company: 'Mekong Bus',
-    departure: '08:00 AM',
-    duration: '4h 30m',
-    type: 'Standard Bus',
-    price: 10,
-  },
-  {
-    id: 3,
-    from: 'Phnom Penh',
-    to: 'Sihanoukville',
-    company: 'Virak Buntham',
-    departure: '01:00 PM',
-    duration: '6h 00m',
-    type: 'VIP Bus',
-    price: 15,
-  },
-  {
-    id: 4,
-    from: 'Phnom Penh',
-    to: 'Kampot',
-    company: 'Angkor Express',
-    departure: '09:30 AM',
-    duration: '3h 45m',
-    type: 'Standard Bus',
-    price: 9,
-  },
-  {
-    id: 5,
-    from: 'Siem Reap',
-    to: 'Phnom Penh',
-    company: 'Mekong Bus',
-    departure: '02:00 PM',
-    duration: '5h 30m',
-    type: 'VIP Bus',
-    price: 12,
-  },
-]
-
-const booking = ref<PendingBooking | null>(null)
+const bookingStore = useBookingStore()
+const { booking } = storeToRefs(bookingStore)
 const passengers = ref<Passenger[]>([])
 const contactEmail = ref('')
 const contactPhone = ref('')
@@ -93,7 +21,7 @@ const loading = ref(false)
 const error = ref('')
 const errors = ref<Record<string, string>>({})
 
-const trip = computed(() => trips.find((t) => t.id === Number(route.params.id)))
+const trip = computed(() => getTrip(Number(route.params.id)))
 
 const totalPrice = computed(() => (trip.value?.price ?? 0) * (booking.value?.seats.length ?? 0))
 
@@ -111,50 +39,13 @@ const bookingValid = computed(() => {
 })
 
 onMounted(() => {
-  const saved = sessionStorage.getItem('pendingBooking')
-
-  if (!saved) {
-    error.value = 'No booking found. Please select your seats first.'
+  if (!bookingValid.value || !booking.value) {
+    error.value = 'No valid booking found. Please select your seats first.'
     return
   }
-
-  try {
-    const data: unknown = JSON.parse(saved)
-
-    if (
-      !data ||
-      typeof data !== 'object' ||
-      !('tripId' in data) ||
-      !('passengers' in data) ||
-      !('seats' in data) ||
-      !('date' in data) ||
-      !('total' in data) ||
-      typeof data.tripId !== 'number' ||
-      typeof data.passengers !== 'number' ||
-      !Number.isInteger(data.passengers) ||
-      !Array.isArray(data.seats) ||
-      !data.seats.every((s: unknown) => typeof s === 'string') ||
-      typeof data.date !== 'string' ||
-      typeof data.total !== 'number'
-    ) {
-      throw new Error('Invalid booking data')
-    }
-
-    booking.value = data as PendingBooking
-
-    if (!bookingValid.value) {
-      error.value = 'Invalid booking details. Please select seats again.'
-      return
-    }
-
-    passengers.value = booking.value.seats.map(() => ({
-      fullName: '',
-      gender: '',
-      phone: '',
-    }))
-  } catch {
-    error.value = 'Unable to load booking information.'
-  }
+  passengers.value = booking.value.seats.map((_, i) => booking.value?.passengersInfo[i] ?? { fullName: '', gender: '', phone: '' })
+  contactEmail.value = booking.value.contact.email
+  contactPhone.value = booking.value.contact.phone
 })
 
 function validateForm(): boolean {
@@ -216,7 +107,7 @@ async function continueToPayment() {
       },
     }
 
-    sessionStorage.setItem('pendingBooking', JSON.stringify(paymentData))
+    bookingStore.setBooking(paymentData)
 
     await router.push({
       path: `/trips/${trip.value.id}/payment`,
@@ -229,64 +120,18 @@ async function continueToPayment() {
 }
 
 function goBack() {
-  router.push({
-    path: `/trips/${route.params.id}/seats`,
-    query: {
-      ...(booking.value?.date && { date: booking.value.date }),
-      passengers: String(booking.value?.passengers ?? 1),
-    },
-  })
+  router.push(`/trips/${route.params.id}/seats`)
 }
 </script>
 
 <template>
   <div class="passenger-page">
     <!-- NAVBAR -->
-    <header class="passenger-navbar">
-      <RouterLink to="/" class="passenger-logo">
-        <img src="/images/logo.png" alt="BookingBus" />
-      </RouterLink>
-
-      <nav class="passenger-nav">
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/trips">Book Bus</RouterLink>
-        <RouterLink to="/my-bookings">My Bookings</RouterLink>
-        <RouterLink to="/">Help</RouterLink>
-      </nav>
-
-      <div class="passenger-account">
-        <RouterLink to="/login">Sign In</RouterLink>
-        <RouterLink to="/register" class="passenger-signup"> Sign Up </RouterLink>
-      </div>
-    </header>
+    <Navbar prefix="passenger" />
 
     <!-- BOOKING PROGRESS -->
-    <div class="passenger-step-wrapper">
-      <div class="passenger-steps">
-        <div class="passenger-step completed">
-          <span>✓</span>
-          Select Bus
-        </div>
-        <div class="passenger-step-line active"></div>
+    <BookingSteps prefix="passenger" :current="3" />
 
-        <div class="passenger-step completed">
-          <span>✓</span>
-          Select Seat
-        </div>
-        <div class="passenger-step-line active"></div>
-
-        <div class="passenger-step current">
-          <span>3</span>
-          Passenger Info
-        </div>
-        <div class="passenger-step-line"></div>
-
-        <div class="passenger-step">
-          <span>4</span>
-          Payment
-        </div>
-      </div>
-    </div>
 
     <main class="passenger-container">
       <div class="passenger-heading">
