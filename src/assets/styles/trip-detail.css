@@ -1,0 +1,483 @@
+.trip-detail-page {
+  min-height: 100vh;
+  background: #f7f9ff;
+  color: #101b3c;
+  font-family: Arial, sans-serif;
+}
+
+.trip-detail-page * {
+  box-sizing: border-box;
+}
+
+.trip-detail-page button,
+.trip-detail-page select {
+  font: inherit;
+}
+
+.detail-navbar {
+  height: 66px;
+  padding: 0 6%;
+  background: #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+}
+
+.detail-logo img {
+  width: 185px;
+  height: 54px;
+  object-fit: contain;
+}
+
+.detail-nav,
+.detail-account {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.detail-nav a,
+.detail-account a {
+  text-decoration: none;
+  color: #25314b;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.detail-nav a.router-link-active {
+  color: #0754d6;
+  font-weight: 700;
+}
+
+.detail-account .detail-signup {
+  background: #0754d6;
+  color: #fff;
+  padding: 12px 22px;
+  border-radius: 9px;
+}
+
+.detail-hero {
+  height: 230px;
+  background: url('/images/bus-hero.png') center 55% / cover no-repeat;
+}
+
+.detail-hero-overlay {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(3, 47, 113, 0.92),
+    rgba(5, 67, 143, 0.65) 40%,
+    transparent 80%
+  );
+}
+
+.detail-hero-inner {
+  max-width: 1450px;
+  margin: auto;
+  padding: 43px 35px;
+  color: white;
+}
+
+.detail-hero-inner > span {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #cce2ff;
+}
+
+.detail-hero h1 {
+  font-size: 46px;
+  margin: 12px 0;
+}
+
+.detail-hero p {
+  font-size: 17px;
+}
+
+.detail-container {
+  max-width: 1450px;
+  margin: 0 auto;
+  padding: 25px 35px 80px;
+}
+
+.detail-breadcrumb {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 25px;
+  font-size: 14px;
+}
+
+.detail-breadcrumb a {
+  color: #0754d6;
+  text-decoration: none;
+}
+
+.detail-breadcrumb span {
+  color: #8a9ab5;
+}
+
+.detail-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 350px;
+  gap: 25px;
+  align-items: start;
+}
+
+.detail-main {
+  display: grid;
+  gap: 20px;
+  min-width: 0;
+}
+
+.detail-card,
+.detail-booking-card {
+  background: #fff;
+  border: 1px solid #e3e9f4;
+  border-radius: 16px;
+  padding: 26px;
+  box-shadow: 0 4px 16px #173b7410;
+}
+
+.detail-card h2,
+.detail-booking-card h2 {
+  font-size: 22px;
+  margin: 0 0 23px;
+}
+
+.detail-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.detail-card-header h2 {
+  margin: 6px 0 0;
+  font-size: 26px;
+}
+
+.detail-small-label {
+  color: #0754d6;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.detail-bus-badge {
+  background: #e7efff;
+  color: #0754d6;
+  border-radius: 30px;
+  padding: 9px 16px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.detail-bus-image {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  border-radius: 12px;
+  display: block;
+}
+
+.detail-route {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 15px;
+  padding: 30px 0 5px;
+}
+
+.detail-location {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.detail-dot {
+  width: 12px;
+  height: 12px;
+  background: #0754d6;
+  border-radius: 50%;
+  margin-top: 8px;
+  flex-shrink: 0;
+}
+
+.detail-location small {
+  color: #8090aa;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.detail-location h3 {
+  margin: 8px 0;
+  font-size: 20px;
+}
+
+.detail-location p {
+  color: #667085;
+  font-size: 14px;
+  margin: 0;
+}
+
+.detail-arrival .detail-dot {
+  background: #18a567;
+}
+
+.detail-journey {
+  text-align: center;
+  flex: 1;
+  max-width: 220px;
+  color: #0754d6;
+  font-weight: 700;
+}
+
+.detail-journey-line {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 10px 0;
+}
+
+.detail-journey-line div {
+  flex: 1;
+  height: 2px;
+  background: #bcd2f5;
+}
+
+.detail-journey small {
+  color: #8290a8;
+  font-weight: 400;
+}
+
+.detail-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 25px;
+}
+
+.detail-info-grid > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.detail-info-grid span {
+  color: #77869d;
+  font-size: 13px;
+}
+
+.detail-info-grid strong {
+  font-size: 15px;
+}
+
+.detail-amenities {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
+
+.detail-amenities > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  background: #f5f8ff;
+  border-radius: 9px;
+  font-size: 14px;
+}
+
+.detail-amenities span {
+  color: #0754d6;
+  font-weight: 800;
+}
+
+.detail-booking-card {
+  position: sticky;
+  top: 20px;
+}
+
+.detail-summary-route {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 18px 0 25px;
+  border-bottom: 1px solid #e6eaf2;
+  font-size: 15px;
+}
+
+.detail-summary-route span {
+  color: #0754d6;
+  font-size: 22px;
+}
+
+.detail-summary-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 15px 0;
+  font-size: 14px;
+}
+
+.detail-summary-row span {
+  color: #667085;
+}
+
+.detail-summary-row strong {
+  text-align: right;
+}
+
+.detail-passengers {
+  margin: 20px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detail-passengers label {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.detail-passengers select {
+  width: 90px;
+  height: 42px;
+  border: 1px solid #d7e0ef;
+  border-radius: 8px;
+  padding: 0 10px;
+  background: white;
+}
+
+.detail-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 0;
+  border-top: 1px solid #e6eaf2;
+}
+
+.detail-total span {
+  font-weight: 700;
+}
+
+.detail-total strong {
+  color: #0754d6;
+  font-size: 30px;
+}
+
+.detail-select-btn {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 9px;
+  background: #0754d6;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.detail-select-btn:hover {
+  background: #003da7;
+}
+
+.detail-summary-note {
+  text-align: center;
+  color: #8290a8;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.detail-not-found {
+  padding: 70px 20px;
+  background: white;
+  border-radius: 16px;
+  text-align: center;
+}
+
+.detail-not-found a {
+  display: inline-block;
+  margin-top: 15px;
+  background: #0754d6;
+  color: white;
+  padding: 12px 22px;
+  border-radius: 9px;
+  text-decoration: none;
+}
+
+.detail-footer {
+  background: white;
+  text-align: center;
+  padding: 25px;
+  color: #667085;
+}
+
+@media (max-width: 1000px) {
+  .detail-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .detail-booking-card {
+    position: static;
+  }
+}
+
+@media (max-width: 650px) {
+  .detail-navbar {
+    height: auto;
+    flex-wrap: wrap;
+    padding: 15px 20px;
+  }
+
+  .detail-nav,
+  .detail-account {
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+
+  .detail-logo img {
+    width: 150px;
+  }
+
+  .detail-hero {
+    height: 210px;
+  }
+
+  .detail-hero-inner {
+    padding: 35px 20px;
+  }
+
+  .detail-hero h1 {
+    font-size: 35px;
+  }
+
+  .detail-container {
+    padding: 20px;
+  }
+
+  .detail-card,
+  .detail-booking-card {
+    padding: 20px;
+  }
+
+  .detail-route {
+    flex-wrap: wrap;
+  }
+
+  .detail-journey {
+    order: 3;
+    flex-basis: 100%;
+    max-width: none;
+  }
+
+  .detail-info-grid,
+  .detail-amenities {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .detail-bus-image {
+    height: 180px;
+  }
+}

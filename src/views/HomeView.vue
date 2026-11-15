@@ -5,26 +5,72 @@ import '@/assets/styles/home.css'
 
 const router = useRouter()
 
-const origin = ref('')
-const destination = ref('')
-const travelDate = ref('')
-const searchError = ref('')
-
 const cities = ['Phnom Penh', 'Siem Reap', 'Battambang', 'Sihanoukville', 'Kampot', 'Kampong Cham']
 
-function searchTrips() {
-  searchError.value = ''
+const origin = ref('Phnom Penh')
+const destination = ref('Siem Reap')
+const travelDate = ref('')
+const error = ref('')
 
-  if (origin.value === destination.value) {
-    searchError.value = 'Departure and destination must be different.'
+const routes = [
+  {
+    id: 1,
+    from: 'Phnom Penh',
+    to: 'Siem Reap',
+    duration: '5h 30m',
+    price: 12,
+    image: '/images/siem-reap.jpg',
+  },
+  {
+    id: 2,
+    from: 'Phnom Penh',
+    to: 'Battambang',
+    duration: '4h 30m',
+    price: 10,
+    image: '/images/battambang.jpg',
+  },
+  {
+    id: 3,
+    from: 'Phnom Penh',
+    to: 'Sihanoukville',
+    duration: '6h 00m',
+    price: 15,
+    image: '/images/sihanoukville.jpg',
+  },
+  {
+    id: 4,
+    from: 'Phnom Penh',
+    to: 'Kampot',
+    duration: '3h 45m',
+    price: 9,
+    image: '/images/kampot.jpg',
+  },
+]
+
+function swapCities() {
+  const temp = origin.value
+  origin.value = destination.value
+  destination.value = temp
+}
+
+function searchBus(from = origin.value, to = destination.value) {
+  error.value = ''
+
+  if (!travelDate.value) {
+    error.value = 'Please select a departure date.'
+    return
+  }
+
+  if (from === to) {
+    error.value = 'Departure and destination must be different.'
     return
   }
 
   router.push({
     path: '/trips',
     query: {
-      origin: origin.value,
-      destination: destination.value,
+      origin: from,
+      destination: to,
       date: travelDate.value,
     },
   })
@@ -32,132 +78,144 @@ function searchTrips() {
 </script>
 
 <template>
-  <div class="home-page">
-    <header class="home-navbar">
-      <RouterLink to="/" class="home-logo"> 🚌 BusBooking </RouterLink>
+  <div class="bus-home">
+    <!-- NAVBAR -->
+    <header class="bus-navbar">
+      <RouterLink to="/" class="bus-logo">
+        <img src="/images/logo.png" alt="BookingBus Logo" class="bus-logo-img" />
+      </RouterLink>
 
-      <nav class="home-nav">
+      <nav class="bus-nav">
         <RouterLink to="/">Home</RouterLink>
-        <a href="#features">Why Us</a>
-        <RouterLink to="/login" class="signin-link"> Sign In </RouterLink>
-        <RouterLink to="/register" class="signup-link"> Sign Up </RouterLink>
+        <RouterLink to="/trips">Routes</RouterLink>
+        <RouterLink to="/my-bookings"> My Bookings </RouterLink>
+        <a href="#features">Help</a>
       </nav>
+
+      <div class="bus-account">
+        <RouterLink to="/login">Sign In</RouterLink>
+        <RouterLink to="/register" class="bus-signup"> Sign Up </RouterLink>
+      </div>
     </header>
 
-    <main>
-      <section class="home-hero">
-        <div class="hero-inner">
-          <div class="hero-copy">
-            <span class="hero-label"> YOUR JOURNEY STARTS HERE </span>
-
-            <h1>
-              Book Your Bus Ticket
-              <span>Quick & Easy</span>
-            </h1>
-
-            <p>
-              Discover available trips across Cambodia. Compare departure times, choose your seat,
-              and book with confidence.
-            </p>
-
-            <div class="hero-highlights">
-              <span>✓ Easy Trip Search</span>
-              <span>✓ Seat Selection</span>
-              <span>✓ Manage Bookings</span>
-            </div>
-          </div>
-
-          <div class="hero-visual">
-            <div class="hero-bus">🚌</div>
-            <div class="hero-visual-title">Explore Cambodia</div>
-            <p>Find your next journey with BusBooking</p>
-          </div>
+    <!-- HERO BANNER -->
+    <section class="bus-hero">
+      <div class="bus-hero-overlay">
+        <div class="bus-hero-content">
+          <h1>
+            ស្វាគមន៍មកកាន់
+            <br />
+            Booking Bus
+          </h1>
+          <p>ស្វែងរកផ្លូវ, ជ្រើសរើសខេត្ត, និងកក់លុយតាមអ៊ីធឺណិតក្នុងរយៈពេលខ្លី</p>
         </div>
-      </section>
-
-      <section class="search-section">
-        <div class="search-panel">
-          <div class="search-heading">
-            <h2>Find Your Bus</h2>
-            <p>Where would you like to go?</p>
-          </div>
-
-          <form class="trip-search" @submit.prevent="searchTrips">
-            <div class="search-field">
-              <label for="origin">From</label>
-              <select id="origin" v-model="origin" required>
-                <option value="" disabled>Select departure</option>
-                <option v-for="city in cities" :key="city" :value="city">
-                  {{ city }}
-                </option>
-              </select>
-            </div>
-
-            <div class="search-field">
-              <label for="destination">To</label>
-              <select id="destination" v-model="destination" required>
-                <option value="" disabled>Select destination</option>
-                <option v-for="city in cities" :key="city" :value="city">
-                  {{ city }}
-                </option>
-              </select>
-            </div>
-
-            <div class="search-field">
-              <label for="travel-date">Travel Date</label>
-              <input id="travel-date" v-model="travelDate" type="date" required />
-            </div>
-
-            <button class="search-button" type="submit">Search Trips</button>
-          </form>
-
-          <p v-if="searchError" class="search-error">
-            {{ searchError }}
-          </p>
-        </div>
-      </section>
-
-      <section id="features" class="home-features">
-        <div class="section-heading">
-          <span>WHY BUSBOOKING?</span>
-          <h2>A Better Way to Travel</h2>
-          <p>Everything you need for a simple bus booking experience.</p>
-        </div>
-
-        <div class="features-grid">
-          <article class="feature-card">
-            <div class="feature-icon">🔎</div>
-            <h3>Find Trips Easily</h3>
-            <p>Search available trips by departure, destination, and date.</p>
-          </article>
-
-          <article class="feature-card">
-            <div class="feature-icon">💺</div>
-            <h3>Choose Your Seat</h3>
-            <p>View available seats and select your preferred seat number.</p>
-          </article>
-
-          <article class="feature-card">
-            <div class="feature-icon">📋</div>
-            <h3>Manage Bookings</h3>
-            <p>View your booked trips and cancel a booking when needed.</p>
-          </article>
-        </div>
-      </section>
-
-      <section class="home-cta">
-        <h2>Ready for Your Next Journey?</h2>
-        <p>Create an account to start booking your bus seats.</p>
-        <RouterLink to="/register"> Get Started </RouterLink>
-      </section>
-    </main>
-
-    <footer class="home-footer">
-      <div>
-        <strong>🚌 BusBooking</strong>
-        <p>Simple online bus ticket booking.</p>
       </div>
-      <span>© 2026 BusBooking</span>
+    </section>
+
+    <!-- SEARCH FORM -->
+    <section class="bus-search-wrapper">
+      <form class="bus-search-form" @submit.prevent="searchBus()">
+        <div class="bus-field">
+          <label for="from">From</label>
+          <select id="from" v-model="origin" required>
+            <option v-for="city in cities" :key="city" :value="city">
+              {{ city }}
+            </option>
+          </select>
+        </div>
+
+        <button
+          type="button"
+          class="bus-swap"
+          aria-label="Swap departure and destination"
+          @click="swapCities"
+        >
+          ⇄
+        </button>
+
+        <div class="bus-field">
+          <label for="to">To</label>
+          <select id="to" v-model="destination" required>
+            <option v-for="city in cities" :key="city" :value="city">
+              {{ city }}
+            </option>
+          </select>
+        </div>
+
+        <div class="bus-field">
+          <label for="date">Depart Date</label>
+          <input id="date" v-model="travelDate" type="date" required />
+        </div>
+
+        <button type="submit" class="bus-search-btn">Search Bus</button>
+
+        <p v-if="error" class="bus-search-error">
+          {{ error }}
+        </p>
+      </form>
+    </section>
+
+    <!-- FEATURES
+    <section id="features" class="bus-features">
+      <div class="bus-feature">
+        <div class="bus-feature-icon">⚡</div>
+        <div>
+          <h3>Fast Booking</h3>
+          <p>Book in a few clicks</p>
+        </div>
+      </div>
+
+      <div class="bus-feature">
+        <div class="bus-feature-icon">🛡️</div>
+        <div>
+          <h3>Easy Management</h3>
+          <p>View and cancel bookings</p>
+        </div>
+      </div>
+
+      <div class="bus-feature">
+        <div class="bus-feature-icon">🚌</div>
+        <div>
+          <h3>Many Routes</h3>
+          <p>Popular destinations in Cambodia</p>
+        </div>
+      </div>
+    </section> -->
+
+    <!-- POPULAR ROUTES -->
+    <section class="bus-popular">
+      <div class="bus-section-title">
+        <h2>Popular Routes</h2>
+        <RouterLink to="/trips"> View All Routes → </RouterLink>
+      </div>
+
+      <div class="bus-route-grid">
+        <article v-for="route in routes" :key="route.id" class="bus-route-card">
+          <img :src="route.image" :alt="route.to" class="bus-route-image" />
+
+          <div class="bus-route-content">
+            <h3>
+              {{ route.from }}
+              <span>→</span>
+              {{ route.to }}
+            </h3>
+
+            <p>🚌 ~ {{ route.duration }}</p>
+
+            <div class="bus-route-bottom">
+              <strong>${{ route.price }}</strong>
+
+              <button type="button" @click="searchBus(route.from, route.to)">Book Now</button>
+            </div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="bus-footer">
+      <img src="/images/logo.png" alt="BookingBus Logo" class="footer-logo" />
+      <p>Easy For Book to Travel</p>
     </footer>
   </div>
 </template>

@@ -17,6 +17,16 @@ const error = ref('')
 async function handleRegister() {
   error.value = ''
 
+  if (!name.value.trim()) {
+    error.value = 'Please enter your full name.'
+    return
+  }
+
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+    error.value = 'Please enter a valid email address.'
+    return
+  }
+
   if (password.value.length < 8) {
     error.value = 'Password must contain at least 8 characters.'
     return
@@ -41,7 +51,7 @@ async function handleRegister() {
       query: { registered: '1' },
     })
   } catch (err) {
-    error.value = err instanceof Error ? err.message : 'Registration failed'
+    error.value = err instanceof Error ? err.message : 'Registration failed. Please try again.'
   } finally {
     loading.value = false
   }
@@ -50,30 +60,67 @@ async function handleRegister() {
 
 <template>
   <div class="auth-page">
+    <!-- HEADER -->
     <header class="auth-header">
-      <RouterLink to="/" class="auth-brand"> <span>🚌</span> BusBooking </RouterLink>
-      <RouterLink to="/" class="back-link">← Back to Home</RouterLink>
+      <RouterLink to="/" class="auth-brand">
+        <img src="/images/logo.png" alt="BookingBus Logo" class="auth-logo" />
+      </RouterLink>
+
+      <RouterLink to="/" class="back-link"> ← Back to Home </RouterLink>
     </header>
 
+    <!-- MAIN -->
     <main class="auth-layout">
+      <!-- LEFT SIDE -->
       <section class="auth-intro">
-        <span class="eyebrow">JOIN BUSBOOKING</span>
-        <h1>Explore More.<br />Travel Better.</h1>
-        <p>Create your free passenger account and enjoy a simple way to book bus tickets.</p>
+        <span class="eyebrow">JOIN BOOKINGBUS</span>
+
+        <h1>
+          Explore More.
+          <br />
+          Travel Better.
+        </h1>
+
+        <p>
+          Create your free passenger account and enjoy a simple way to book bus tickets across
+          Cambodia.
+        </p>
 
         <div class="auth-benefits">
-          <div>✓ Search trips across Cambodia</div>
-          <div>✓ Choose your bus seat</div>
-          <div>✓ Manage your bookings online</div>
+          <div>
+            <span class="check-icon">✓</span>
+            Search trips across Cambodia
+          </div>
+
+          <div>
+            <span class="check-icon">✓</span>
+            Choose your preferred bus seat
+          </div>
+
+          <div>
+            <span class="check-icon">✓</span>
+            Manage your bookings online
+          </div>
+        </div>
+
+        <!-- BUS IMAGE -->
+        <div class="auth-decoration">
+          <img src="/images/bus-hero.png" alt="BookingBus transportation" class="auth-bus-image" />
         </div>
       </section>
 
+      <!-- REGISTER CARD -->
       <section class="auth-card">
-        <div class="auth-symbol">🚌</div>
+        <div class="auth-symbol">
+          <img src="/images/logo.png" alt="BookingBus" class="auth-card-logo" />
+        </div>
+
         <h2>Create Account</h2>
-        <p class="auth-subtitle">Join BusBooking and start your journey</p>
+
+        <p class="auth-subtitle">Join BookingBus and start your journey</p>
 
         <form @submit.prevent="handleRegister">
+          <!-- FULL NAME -->
           <div class="form-group">
             <label for="name">Full Name</label>
             <input
@@ -82,12 +129,15 @@ async function handleRegister() {
               type="text"
               placeholder="Enter your full name"
               autocomplete="name"
+              minlength="2"
               required
             />
           </div>
 
+          <!-- EMAIL -->
           <div class="form-group">
-            <label for="register-email">Email Address</label>
+            <label for="register-email"> Email Address </label>
+
             <input
               id="register-email"
               v-model.trim="email"
@@ -98,8 +148,10 @@ async function handleRegister() {
             />
           </div>
 
+          <!-- PASSWORD -->
           <div class="form-group">
-            <label for="register-password">Password</label>
+            <label for="register-password"> Password </label>
+
             <div class="password-input">
               <input
                 id="register-password"
@@ -110,14 +162,22 @@ async function handleRegister() {
                 minlength="8"
                 required
               />
-              <button type="button" @click="showPassword = !showPassword">
+
+              <button
+                type="button"
+                class="password-toggle"
+                :aria-label="showPassword ? 'Hide password' : 'Show password'"
+                @click="showPassword = !showPassword"
+              >
                 {{ showPassword ? 'Hide' : 'Show' }}
               </button>
             </div>
           </div>
 
+          <!-- CONFIRM PASSWORD -->
           <div class="form-group">
-            <label for="confirm-password">Confirm Password</label>
+            <label for="confirm-password"> Confirm Password </label>
+
             <input
               id="confirm-password"
               v-model="confirmPassword"
@@ -128,19 +188,25 @@ async function handleRegister() {
             />
           </div>
 
+          <!-- ERROR -->
           <p v-if="error" class="form-error" role="alert">
             {{ error }}
           </p>
 
-          <button class="primary-button" :disabled="loading">
+          <!-- SUBMIT -->
+          <button type="submit" class="primary-button" :disabled="loading">
             {{ loading ? 'Creating Account...' : 'Create Account' }}
           </button>
         </form>
 
-        <p class="auth-switch">
-          Already have an account?
-          <RouterLink to="/login">Sign In</RouterLink>
-        </p>
+        <!-- LOGIN LINK -->
+        <div class="auth-divider">
+          <span>Already have an account?</span>
+        </div>
+
+        <RouterLink to="/login" class="register-button"> Sign In </RouterLink>
+
+        <p class="auth-footer-text">© 2026 BookingBus. All rights reserved.</p>
       </section>
     </main>
   </div>
